@@ -1,30 +1,14 @@
 import { Link, useLocation } from "wouter";
-import { useUser, useClerk } from "@clerk/react";
+import { useAuth } from "@/context/AuthContext";
 import {
-  LayoutDashboard,
-  FileText,
-  Briefcase,
-  Sparkles,
-  Settings,
-  LogOut,
-  Menu,
+  LayoutDashboard, FileText, Briefcase, Sparkles, Settings, LogOut, Menu,
 } from "lucide-react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton,
+  SidebarMenuItem, SidebarProvider, SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const items = [
@@ -37,8 +21,10 @@ const items = [
 
 function AppSidebar() {
   const [location] = useLocation();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut } = useAuth();
+  const email = user?.email ?? "";
+  const displayName = user?.user_metadata?.full_name ?? email.split("@")[0] ?? "User";
+  const initials = displayName.charAt(0).toUpperCase();
 
   return (
     <Sidebar variant="inset" className="border-r border-border/50">
@@ -73,18 +59,13 @@ function AppSidebar() {
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3 px-2 py-2">
           <Avatar className="h-9 w-9 border border-border/50">
-            <AvatarImage src={user?.imageUrl} />
-            <AvatarFallback>{user?.firstName?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col flex-1 overflow-hidden">
-            <span className="text-sm font-medium truncate">
-              {user?.fullName || "User"}
-            </span>
-            <span className="text-xs text-muted-foreground truncate">
-              {user?.primaryEmailAddress?.emailAddress}
-            </span>
+            <span className="text-sm font-medium truncate">{displayName}</span>
+            <span className="text-xs text-muted-foreground truncate">{email}</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => signOut()} title="Sign Out">
+          <Button variant="ghost" size="icon" onClick={() => signOut()} title="Sign Out" data-testid="button-signout">
             <LogOut className="h-4 w-4 text-muted-foreground hover:text-foreground" />
           </Button>
         </div>
