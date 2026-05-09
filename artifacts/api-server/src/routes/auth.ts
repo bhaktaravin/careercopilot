@@ -9,6 +9,7 @@ export interface AuthRequest extends Request {
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
+    req.log.warn({ url: req.url }, "Missing or malformed Authorization header");
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -17,13 +18,15 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     const supabase = getAuthClient(accessToken);
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) {
-      res.status(401).json({ error: "Unauthorized" });
+      req.log.warn({ url: req.url, error: error?.message }, "Token verification failed");
+      res.status(401).json({ error: "Unauthorized", detail: error?.message });
       return;
     }
     (req as AuthRequest).userId = user.id;
     (req as AuthRequest).accessToken = accessToken;
     next();
-  } catch {
+  } catch (err) {
+    req.log.error({ url: req.url, err }, "Auth middleware exception");
     res.status(401).json({ error: "Unauthorized" });
   }
 };
