@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: CareerCopilot API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: profiles
+    description: User profile operations
+  - name: resumes
+    description: Resume management
+  - name: applications
+    description: Job application tracking
+  - name: ai
+    description: AI generation operations
+  - name: dashboard
+    description: Dashboard analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +34,655 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Profile ──────────────────────────────────────────────────────────────
+  /profiles/me:
+    get:
+      operationId: getMyProfile
+      tags: [profiles]
+      summary: Get current user's profile
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
+    put:
+      operationId: upsertProfile
+      tags: [profiles]
+      summary: Create or update current user's profile
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: Profile upserted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  # ── Resumes ──────────────────────────────────────────────────────────────
+  /resumes:
+    get:
+      operationId: listResumes
+      tags: [resumes]
+      summary: List user's resumes
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: List of resumes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resume"
+    post:
+      operationId: createResume
+      tags: [resumes]
+      summary: Upload or create a resume
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeInput"
+      responses:
+        "201":
+          description: Resume created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+
+  /resumes/{id}:
+    get:
+      operationId: getResume
+      tags: [resumes]
+      summary: Get a specific resume
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resume found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateResume
+      tags: [resumes]
+      summary: Update a resume
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeUpdate"
+      responses:
+        "200":
+          description: Resume updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+    delete:
+      operationId: deleteResume
+      tags: [resumes]
+      summary: Delete a resume
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Applications ──────────────────────────────────────────────────────────
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List user's job applications
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Create a new job application
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get a specific application
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Application found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update an application
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    delete:
+      operationId: deleteApplication
+      tags: [applications]
+      summary: Delete an application
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Generated Responses ───────────────────────────────────────────────────
+  /applications/{id}/generated-responses:
+    get:
+      operationId: listGeneratedResponses
+      tags: [applications]
+      summary: Get all AI-generated responses for an application
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated responses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeneratedResponse"
+
+  # ── AI Generation ──────────────────────────────────────────────────────────
+  /ai/generate:
+    post:
+      operationId: generateAiContent
+      tags: [ai]
+      summary: Generate AI content for a job application
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiGenerateInput"
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGenerateResult"
+
+  /ai/analyze-ats:
+    post:
+      operationId: analyzeAts
+      tags: [ai]
+      summary: Analyze ATS keywords match between resume and job description
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AtsAnalysisInput"
+      responses:
+        "200":
+          description: ATS analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AtsAnalysisResult"
+
+  /ai/answer-question:
+    post:
+      operationId: answerApplicationQuestion
+      tags: [ai]
+      summary: Generate answer to a specific application question
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionAnswerInput"
+      responses:
+        "200":
+          description: Generated answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionAnswerResult"
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary statistics
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-applications:
+    get:
+      operationId: getRecentApplications
+      tags: [dashboard]
+      summary: Get recent applications for dashboard feed
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Recent applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+
 components:
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # ── Profile ──────────────────────────────────────────────────────────
+    Profile:
+      type: object
+      required: [id, userId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        linkedinUrl:
+          type: ["string", "null"]
+        websiteUrl:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        currentTitle:
+          type: ["string", "null"]
+        yearsOfExperience:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProfileInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        location:
+          type: string
+        linkedinUrl:
+          type: string
+        websiteUrl:
+          type: string
+        bio:
+          type: string
+        currentTitle:
+          type: string
+        yearsOfExperience:
+          type: integer
+
+    # ── Resume ────────────────────────────────────────────────────────────
+    Resume:
+      type: object
+      required: [id, userId, title, content, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        isDefault:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ResumeInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        isDefault:
+          type: boolean
+
+    ResumeUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        isDefault:
+          type: boolean
+
+    # ── Application ───────────────────────────────────────────────────────
+    Application:
+      type: object
+      required: [id, userId, companyName, jobTitle, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        companyName:
+          type: string
+        jobTitle:
+          type: string
+        jobUrl:
+          type: ["string", "null"]
+        jobDescription:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [saved, applied, interview, offer, rejected, withdrawn]
+        appliedAt:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        resumeId:
+          type: ["integer", "null"]
+        matchScore:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ApplicationInput:
+      type: object
+      required: [companyName, jobTitle]
+      properties:
+        companyName:
+          type: string
+        jobTitle:
+          type: string
+        jobUrl:
+          type: string
+        jobDescription:
+          type: string
+        status:
+          type: string
+          enum: [saved, applied, interview, offer, rejected, withdrawn]
+        appliedAt:
+          type: string
+        notes:
+          type: string
+        resumeId:
+          type: integer
+
+    ApplicationUpdate:
+      type: object
+      properties:
+        companyName:
+          type: string
+        jobTitle:
+          type: string
+        jobUrl:
+          type: string
+        jobDescription:
+          type: string
+        status:
+          type: string
+          enum: [saved, applied, interview, offer, rejected, withdrawn]
+        appliedAt:
+          type: string
+        notes:
+          type: string
+        resumeId:
+          type: integer
+        matchScore:
+          type: integer
+
+    # ── Generated Response ────────────────────────────────────────────────
+    GeneratedResponse:
+      type: object
+      required: [id, applicationId, type, content, createdAt]
+      properties:
+        id:
+          type: integer
+        applicationId:
+          type: integer
+        type:
+          type: string
+          enum: [resume_summary, bullet_points, cover_letter, why_role, tell_me_about_yourself, why_hire_you, describe_experience, strengths]
+        content:
+          type: string
+        createdAt:
+          type: string
+
+    # ── AI Generation ─────────────────────────────────────────────────────
+    AiGenerateInput:
+      type: object
+      required: [applicationId, resumeContent, jobDescription, types]
+      properties:
+        applicationId:
+          type: integer
+        resumeContent:
+          type: string
+        jobDescription:
+          type: string
+        types:
+          type: array
+          items:
+            type: string
+            enum: [resume_summary, bullet_points, cover_letter, why_role, tell_me_about_yourself, why_hire_you, describe_experience, strengths]
+
+    AiGenerateResult:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedResponse"
+
+    AtsAnalysisInput:
+      type: object
+      required: [resumeContent, jobDescription]
+      properties:
+        resumeContent:
+          type: string
+        jobDescription:
+          type: string
+
+    AtsAnalysisResult:
+      type: object
+      required: [matchScore, matchedKeywords, missingKeywords, suggestions]
+      properties:
+        matchScore:
+          type: integer
+        matchedKeywords:
+          type: array
+          items:
+            type: string
+        missingKeywords:
+          type: array
+          items:
+            type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    QuestionAnswerInput:
+      type: object
+      required: [question, resumeContent, jobDescription]
+      properties:
+        question:
+          type: string
+        resumeContent:
+          type: string
+        jobDescription:
+          type: string
+        applicationId:
+          type: integer
+
+    QuestionAnswerResult:
+      type: object
+      required: [answer]
+      properties:
+        answer:
+          type: string
+
+    # ── Dashboard ─────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      required: [totalApplications, byStatus, totalResumes, totalGeneratedResponses, recentActivityCount]
+      properties:
+        totalApplications:
+          type: integer
+        byStatus:
+          type: object
+          properties:
+            saved:
+              type: integer
+            applied:
+              type: integer
+            interview:
+              type: integer
+            offer:
+              type: integer
+            rejected:
+              type: integer
+            withdrawn:
+              type: integer
+        totalResumes:
+          type: integer
+        totalGeneratedResponses:
+          type: integer
+        recentActivityCount:
+          type: integer
