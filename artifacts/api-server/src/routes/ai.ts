@@ -1,8 +1,10 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import OpenAI from "openai";
 import { getSupabaseClient } from "../lib/supabase";
 import { requireAuth, type AuthRequest } from "./auth";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const router = Router();
 
@@ -51,8 +53,8 @@ router.post("/ai/generate", requireAuth, async (req: Request, res: Response) => 
     for (const type of types) {
       const prompt = buildPrompt(type, resume_content, job_description, companyName, jobTitle);
       const completion = await openai.chat.completions.create({
-        model: "gpt-5-mini",
-        max_completion_tokens: 8192,
+        model: "gpt-4.1",
+        max_tokens: 8192,
         messages: [
           { role: "system", content: "You are an expert career coach and resume writer. Be truthful, specific, and professional." },
           { role: "user", content: prompt },
@@ -66,11 +68,10 @@ router.post("/ai/generate", requireAuth, async (req: Request, res: Response) => 
         .single();
       results.push(saved);
     }
-    // Update match score
     if (application_id && types.includes("resume_summary")) {
       const scoreCompletion = await openai.chat.completions.create({
-        model: "gpt-5-nano",
-        max_completion_tokens: 10,
+        model: "gpt-4.1-mini",
+        max_tokens: 10,
         messages: [{ role: "user", content: `Rate how well this resume matches this job description on a scale of 0-100. Return ONLY a number.\n\nResume:\n${resume_content}\n\nJob Description:\n${job_description}` }],
       });
       const score = parseInt((scoreCompletion.choices[0]?.message?.content ?? "0").replace(/[^0-9]/g, "")) || 0;
@@ -90,8 +91,8 @@ router.post("/ai/analyze-ats", requireAuth, async (req: Request, res: Response) 
   if (!resume_content || !job_description) { res.status(400).json({ error: "resume_content and job_description required" }); return; }
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      max_completion_tokens: 2000,
+      model: "gpt-4.1",
+      max_tokens: 2000,
       messages: [
         { role: "system", content: "You are an ATS expert. Return only valid JSON." },
         { role: "user", content: `Analyze the ATS keyword match. Return JSON with: matchScore (0-100), matchedKeywords (string[]), missingKeywords (string[]), suggestions (string[], 3-5 items). Return ONLY valid JSON.\n\nResume:\n${resume_content}\n\nJob Description:\n${job_description}` },
@@ -112,8 +113,8 @@ router.post("/ai/answer-question", requireAuth, async (req: Request, res: Respon
   if (!question || !resume_content || !job_description) { res.status(400).json({ error: "question, resume_content, and job_description required" }); return; }
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      max_completion_tokens: 2000,
+      model: "gpt-4.1",
+      max_tokens: 2000,
       messages: [
         { role: "system", content: "You are an expert career coach. Write authentic, tailored application answers." },
         { role: "user", content: `Answer this application question: "${question}"\n\nResume:\n${resume_content}\n\nJob Description:\n${job_description}` },
