@@ -43,14 +43,14 @@ export default function AiAssistant() {
     mutationFn: (data: { resume_content: string; job_description: string; types: string[] }) =>
       api.post<{ results: GenResult[] }>("/ai/generate", data),
     onSuccess: (res) => { setGenResults(res.results ?? []); toast({ title: "Content generated" }); },
-    onError: () => toast({ title: "Generation failed", variant: "destructive" }),
+    onError: (err: unknown) => toast({ title: "Generation failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
   });
 
   const atsMutation = useMutation({
     mutationFn: (data: { resume_content: string; job_description: string }) =>
       api.post<AtsResult>("/ai/analyze-ats", data),
     onSuccess: (res) => { setAtsResult(res); toast({ title: "ATS Analysis complete" }); },
-    onError: () => toast({ title: "ATS analysis failed", variant: "destructive" }),
+    onError: (err: unknown) => toast({ title: "ATS analysis failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
   });
 
   const handleCopy = (text: string, id: string) => {
