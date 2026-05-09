@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { getSupabaseClient } from "../lib/supabase";
+import { anonClient } from "../lib/supabase";
 
 export interface AuthRequest extends Request {
   userId: string;
@@ -14,8 +14,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   }
   const accessToken = authHeader.slice(7);
   try {
-    const supabase = getSupabaseClient(accessToken);
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
     if (error || !user) {
       res.status(401).json({ error: "Unauthorized" });
       return;

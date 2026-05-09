@@ -8,11 +8,14 @@ if (!supabaseUrl) throw new Error("SUPABASE_URL is required");
 if (!supabaseAnonKey) throw new Error("SUPABASE_ANON_KEY is required");
 if (!supabaseServiceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required");
 
-export function getSupabaseClient(accessToken?: string) {
-  return createClient(supabaseUrl!, supabaseServiceRoleKey!, {
-    global: {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-    },
-    auth: { persistSession: false },
-  });
+export const anonClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+  auth: { persistSession: false },
+});
+
+export const db = createClient(supabaseUrl!, supabaseServiceRoleKey!, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+export function getSupabaseClient(_accessToken?: string) {
+  return db;
 }
