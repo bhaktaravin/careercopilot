@@ -23,7 +23,15 @@ export default function SignInPage() {
       await signIn(email, password);
       setLocation("/dashboard");
     } catch (err: unknown) {
-      toast({ title: "Sign in failed", description: err instanceof Error ? err.message : "Invalid credentials", variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Invalid credentials";
+      const isUnconfirmed = msg.toLowerCase().includes("email not confirmed") || msg.toLowerCase().includes("not confirmed");
+      toast({
+        title: "Sign in failed",
+        description: isUnconfirmed
+          ? "Please confirm your email first — check your inbox for the confirmation link."
+          : msg,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
