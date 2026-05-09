@@ -43,7 +43,7 @@ export default function Resume() {
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/resumes"] });
     },
-    onError: () => toast({ title: "Failed to add resume", variant: "destructive" }),
+    onError: (err: unknown) => toast({ title: "Failed to add resume", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
   });
 
   const deleteResume = useMutation({
