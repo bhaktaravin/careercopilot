@@ -1,0 +1,26 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 24
+        - nvm use 24
+        - corepack enable
+        - corepack prepare pnpm@10 --activate
+        - pnpm install --frozen-lockfile
+    build:
+      commands:
+        - export PORT=25091 BASE_PATH=/
+        - pnpm --filter @workspace/career-copilot run build
+  artifacts:
+    baseDirectory: artifacts/career-copilot/dist/public
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - artifacts/career-copilot/node_modules/**/*
+  customRules:
+    - source: "/<*>"
+      target: "/index.html"
+      status: "200"
