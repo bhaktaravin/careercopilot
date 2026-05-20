@@ -10,6 +10,11 @@ frontend:
         - pnpm install --frozen-lockfile
     build:
       commands:
+        - |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "ERROR: Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Amplify Environment variables"
+            exit 1
+          fi
         - export PORT=25091 BASE_PATH=/
         - pnpm --filter @workspace/career-copilot run build
   artifacts:

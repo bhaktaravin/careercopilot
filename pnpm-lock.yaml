@@ -169,9 +169,6 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.105.4
         version: 2.105.4
-      '@workspace/integrations-openai-ai-server':
-        specifier: workspace:*
-        version: link:../../lib/integrations-openai-ai-server
       cors:
         specifier: ^2
         version: 2.8.6
