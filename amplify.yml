@@ -26,6 +26,7 @@ frontend:
       - node_modules/**/*
       - artifacts/career-copilot/node_modules/**/*
   customRules:
-    - source: "/<*>"
-      target: "/index.html"
+    # SPA fallback only — do not rewrite .js/.css (blank page if you use "/<*>" alone)
+    - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>'
+      target: /index.html
       status: "200"

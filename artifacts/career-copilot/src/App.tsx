@@ -20,16 +20,24 @@ import NotFound from "@/pages/not-found";
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+      <p className="text-sm text-muted-foreground">Loading…</p>
+    </div>
+  );
+}
+
 function HomeRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
   if (user) return <Redirect to="/dashboard" />;
   return <Landing />;
 }
 
 function ProtectedRoute({ component: Component, ...props }: { component: React.ComponentType<Record<string, unknown>> } & Record<string, unknown>) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Redirect to="/" />;
   return <AppLayout><Component {...props} /></AppLayout>;
 }
